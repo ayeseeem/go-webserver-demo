@@ -41,6 +41,23 @@ func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
+func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/wiki/edit/"):]
+	p, err := loadPage(title)
+	if err != nil {
+		p = Page{Title: title, Body: "Empty Body"}
+	}
+
+	pageTemplateString := `
+<h1>Editing %s</h1>
+<form action="/save/%s" method="POST">
+<textarea name="body">%s</textarea><br>
+<input type="submit" value="Save">
+</form>
+`
+	fmt.Fprintf(w, pageTemplateString, p.Title, p.Title, p.Body)
+}
+
 func main() {
 
 	p1 := Page{Title: "TestPage", Body: "This is a sample Page."}
@@ -55,6 +72,8 @@ func main() {
 	http.HandleFunc("/", top)
 	http.HandleFunc("/simple", simple)
 	http.HandleFunc("/wiki/view/", wikiViewHandler)
+	http.HandleFunc("/wiki/edit/", wikiEditHandler)
+	//	http.HandleFunc("/wiki/sace/", wikiSaveHandler)
 	http.ListenAndServe(addr, nil)
 }
 
