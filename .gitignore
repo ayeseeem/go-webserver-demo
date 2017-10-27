@@ -1,0 +1,9 @@
+
+#Ignore thumbnails created by Windows
+Thumbs.db
+
+#Backus
+*.bak
+
+#Ignore build artefacts and outputs
+*.exe
