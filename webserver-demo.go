@@ -37,7 +37,11 @@ func loadPage(title string) (Page, error) {
 
 func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/wiki/view/"):]
-	p, _ := loadPage(title)
+	p, err := loadPage(title)
+	if err != nil {
+		http.Redirect(w, r, "/wiki/edit/"+title, http.StatusFound)
+		return
+	}
 	renderTemplate(w, "wikiView", p)
 }
 
@@ -45,7 +49,7 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/wiki/edit/"):]
 	p, err := loadPage(title)
 	if err != nil {
-		p = Page{Title: title, Body: "Empty Body"}
+		p = Page{Title: title}
 	}
 	renderTemplate(w, "wikiEdit", p)
 }
