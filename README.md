@@ -1,5 +1,5 @@
-`webserver-demo`
-================
+`go-webserver-demo`
+===================
 
 A simple webserver written in Go.
 
