@@ -39,6 +39,23 @@ func loadPage(title string) (Page, error) {
 
 var validPath = regexp.MustCompile("^/wiki/(edit|save|view)/([a-zA-Z0-9]+)$")
 
+func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		m := validPath.FindStringSubmatch(path)
+		if m == nil {
+			log.Println("Could not extract title from path", path)
+			http.NotFound(w, r)
+			return
+		}
+		viewType := m[1]
+		log.Println("View type:", viewType)
+		pageTitle := m[2]
+		log.Println("Page title:", pageTitle)
+		fn(w, r, pageTitle)
+	}
+}
+
 func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
 	path := r.URL.Path
 	m := validPath.FindStringSubmatch(path)
@@ -54,11 +71,7 @@ func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
 	return pageTitle, nil
 }
 
-func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
-	title, err := getTitle(w, r)
-	if err != nil {
-		return
-	}
+func wikiViewHandler(w http.ResponseWriter, r *http.Request, title string) {
 	p, err := loadPage(title)
 	if err != nil {
 		http.Redirect(w, r, "/wiki/edit/"+title, http.StatusFound)
@@ -67,11 +80,7 @@ func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "wikiView", p)
 }
 
-func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
-	title, err := getTitle(w, r)
-	if err != nil {
-		return
-	}
+func wikiEditHandler(w http.ResponseWriter, r *http.Request, title string) {
 	p, err := loadPage(title)
 	if err != nil {
 		p = Page{Title: title}
@@ -79,11 +88,7 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "wikiEdit", p)
 }
 
-func wikiSaveHandler(w http.ResponseWriter, r *http.Request) {
-	title, err := getTitle(w, r)
-	if err != nil {
-		return
-	}
+func wikiSaveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	body := r.FormValue("body")
 	p := Page{Title: title, Body: body}
 	p.save()
@@ -108,9 +113,9 @@ func main() {
 
 	http.HandleFunc("/", top)
 	http.HandleFunc("/simple", simple)
-	http.HandleFunc("/wiki/view/", wikiViewHandler)
-	http.HandleFunc("/wiki/edit/", wikiEditHandler)
-	http.HandleFunc("/wiki/save/", wikiSaveHandler)
+	http.HandleFunc("/wiki/view/", makeHandler(wikiViewHandler))
+	http.HandleFunc("/wiki/edit/", makeHandler(wikiEditHandler))
+	http.HandleFunc("/wiki/save/", makeHandler(wikiSaveHandler))
 	http.ListenAndServe(addr, nil)
 }
 
