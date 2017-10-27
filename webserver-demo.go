@@ -48,14 +48,8 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 		p = Page{Title: title, Body: "Empty Body"}
 	}
 
-	pageTemplateString := `
-<h1>Editing %s</h1>
-<form action="/save/%s" method="POST">
-<textarea name="body">%s</textarea><br>
-<input type="submit" value="Save">
-</form>
-`
-	fmt.Fprintf(w, pageTemplateString, p.Title, p.Title, p.Body)
+	t, _ := template.ParseFiles("./templates/wikiEdit.html")
+	t.Execute(w, p)
 }
 
 func main() {
