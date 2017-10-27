@@ -19,18 +19,26 @@ type Page struct {
 }
 
 func (p Page) save() error {
+	log.Println("Saving page", p.Title)
 	filename := p.Title + ".txt"
 	err := ioutil.WriteFile(filename, []byte(p.Body), os.ModePerm)
 	return err
 }
 
 func loadPage(title string) (Page, error) {
+	log.Println("Loading page", title)
 	filename := title + ".txt"
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return Page{Title: title, Body: "Could not retrieve file - do not save this!!!"}, err
 	}
 	return Page{Title: title, Body: string(body)}, nil
+}
+
+func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/wiki/view/"):]
+	p, _ := loadPage(title)
+	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
 func main() {
@@ -46,6 +54,7 @@ func main() {
 
 	http.HandleFunc("/", top)
 	http.HandleFunc("/simple", simple)
+	http.HandleFunc("/wiki/view/", wikiViewHandler)
 	http.ListenAndServe(addr, nil)
 }
 
