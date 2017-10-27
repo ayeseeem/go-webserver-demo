@@ -38,7 +38,7 @@ func loadPage(title string) (Page, error) {
 func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/wiki/view/"):]
 	p, _ := loadPage(title)
-	renderTemplate(w, "./templates/wikiView.html", p)
+	renderTemplate(w, "wikiView", p)
 }
 
 func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,13 +47,13 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		p = Page{Title: title, Body: "Empty Body"}
 	}
-	renderTemplate(w, "./templates/wikiEdit.html", p)
+	renderTemplate(w, "wikiEdit", p)
 }
 
-func renderTemplate(w http.ResponseWriter, templateFilename string, p Page) {
-	t, err := template.ParseFiles(templateFilename)
+func renderTemplate(w http.ResponseWriter, templateName string, p Page) {
+	t, err := template.ParseFiles("./templates/" + templateName + ".html")
 	if err != nil {
-		log.Println("Problem with template", err)
+		log.Println("Problem with template", templateName, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
