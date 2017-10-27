@@ -38,9 +38,7 @@ func loadPage(title string) (Page, error) {
 func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/wiki/view/"):]
 	p, _ := loadPage(title)
-
-	t, _ := template.ParseFiles("./templates/wikiView.html")
-	t.Execute(w, p)
+	renderTemplate(w, "./templates/wikiView.html", p)
 }
 
 func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,11 +47,18 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		p = Page{Title: title, Body: "Empty Body"}
 	}
-
-	t, _ := template.ParseFiles("./templates/wikiEdit.html")
-	t.Execute(w, p)
+	renderTemplate(w, "./templates/wikiEdit.html", p)
 }
 
+func renderTemplate(w http.ResponseWriter, templateFilename string, p Page) {
+	t, err := template.ParseFiles(templateFilename)
+	if err != nil {
+		log.Println("Problem with template", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	t.Execute(w, p)
+}
 func main() {
 
 	p1 := Page{Title: "TestPage", Body: "This is a sample Page."}
@@ -90,7 +95,7 @@ func top(w http.ResponseWriter, r *http.Request) {
 }
 
 func simple(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "./templates/simple-template.html", UserInfo{123, "mockers"})
+	renderUserTemplate(w, "./templates/simple-template.html", UserInfo{123, "mockers"})
 }
 
 // UserInfo is a bodged type for use investigating how templates work
@@ -101,7 +106,7 @@ type UserInfo struct {
 	Username string
 }
 
-func renderTemplate(w http.ResponseWriter, templateFilename string, user UserInfo) {
+func renderUserTemplate(w http.ResponseWriter, templateFilename string, user UserInfo) {
 	t, err := template.ParseFiles(templateFilename)
 	if err != nil {
 		log.Println("Problem with template", err)
