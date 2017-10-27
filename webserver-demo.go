@@ -8,10 +8,20 @@ import (
 	"net/http"
 )
 
+const addr = ":8080"
+
 func main() {
+	printStartUpMessage(addr)
+
 	http.HandleFunc("/", top)
 	http.HandleFunc("/simple", simple)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(addr, nil)
+}
+
+func printStartUpMessage(addr string) {
+	fmt.Println("Demo webserver")
+	fmt.Printf("Visit http://localhost%v\n", addr)
+	fmt.Println("Press ^C (Ctrl-C) to finish")
 }
 
 func top(w http.ResponseWriter, r *http.Request) {
