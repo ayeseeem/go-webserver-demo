@@ -62,15 +62,16 @@ func wikiSaveHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/wiki/view/"+title, http.StatusFound)
 }
 
+var templates = template.Must(template.ParseFiles("./templates/wikiEdit.html", "./templates/wikiView.html"))
+
 func renderTemplate(w http.ResponseWriter, templateName string, p Page) {
-	t, err := template.ParseFiles("./templates/" + templateName + ".html")
+	err := templates.ExecuteTemplate(w, templateName+".html", p)
 	if err != nil {
 		log.Println("Problem with template", templateName, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
-	t.Execute(w, p)
 }
+
 func main() {
 
 	sandbox()
