@@ -54,6 +54,14 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "wikiEdit", p)
 }
 
+func wikiSaveHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/wiki/save/"):]
+	body := r.FormValue("body")
+	p := Page{Title: title, Body: body}
+	p.save()
+	http.Redirect(w, r, "/wiki/view/"+title, http.StatusFound)
+}
+
 func renderTemplate(w http.ResponseWriter, templateName string, p Page) {
 	t, err := template.ParseFiles("./templates/" + templateName + ".html")
 	if err != nil {
@@ -78,7 +86,7 @@ func main() {
 	http.HandleFunc("/simple", simple)
 	http.HandleFunc("/wiki/view/", wikiViewHandler)
 	http.HandleFunc("/wiki/edit/", wikiEditHandler)
-	//	http.HandleFunc("/wiki/sace/", wikiSaveHandler)
+	http.HandleFunc("/wiki/save/", wikiSaveHandler)
 	http.ListenAndServe(addr, nil)
 }
 
