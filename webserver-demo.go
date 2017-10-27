@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 )
 
 const addr = ":8080"
@@ -35,8 +37,28 @@ func loadPage(title string) (Page, error) {
 	return Page{Title: title, Body: string(body)}, nil
 }
 
+var validPath = regexp.MustCompile("^/wiki/(edit|save|view)/([a-zA-Z0-9]+)$")
+
+func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
+	path := r.URL.Path
+	m := validPath.FindStringSubmatch(path)
+	if m == nil {
+		log.Println("Could not extract title from path", path)
+		http.NotFound(w, r)
+		return "", errors.New("Invalid Page Title")
+	}
+	viewType := m[1]
+	log.Println("View type:", viewType)
+	pageTitle := m[2]
+	log.Println("Page title:", pageTitle)
+	return pageTitle, nil
+}
+
 func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/wiki/view/"):]
+	title, err := getTitle(w, r)
+	if err != nil {
+		return
+	}
 	p, err := loadPage(title)
 	if err != nil {
 		http.Redirect(w, r, "/wiki/edit/"+title, http.StatusFound)
@@ -46,7 +68,10 @@ func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/wiki/edit/"):]
+	title, err := getTitle(w, r)
+	if err != nil {
+		return
+	}
 	p, err := loadPage(title)
 	if err != nil {
 		p = Page{Title: title}
@@ -55,7 +80,10 @@ func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func wikiSaveHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/wiki/save/"):]
+	title, err := getTitle(w, r)
+	if err != nil {
+		return
+	}
 	body := r.FormValue("body")
 	p := Page{Title: title, Body: body}
 	p.save()
