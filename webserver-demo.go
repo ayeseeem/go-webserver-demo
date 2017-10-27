@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 const addr = ":8080"
@@ -25,14 +26,12 @@ func printStartUpMessage(addr string) {
 }
 
 func top(w http.ResponseWriter, r *http.Request) {
-	homePageText := `
-<html>
-<body>
-<p>Hello world</p>
-</body>
-</html>
-`
-	fmt.Fprintf(w, homePageText)
+	f, err := os.Open("./home.html")
+	if err != nil {
+		log.Fatal("Could not read template", err)
+	}
+	defer f.Close()
+	io.Copy(w, f)
 }
 
 func simple(w http.ResponseWriter, r *http.Request) {
