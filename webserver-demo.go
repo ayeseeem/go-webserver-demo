@@ -73,12 +73,7 @@ func renderTemplate(w http.ResponseWriter, templateName string, p Page) {
 }
 func main() {
 
-	p1 := Page{Title: "TestPage", Body: "This is a sample Page."}
-	p1.save()
-
-	p2, _ := loadPage("TestPage")
-	fmt.Println(p2.Title)
-	fmt.Println(p2.Body)
+	sandbox()
 
 	printStartUpMessage(addr)
 
@@ -88,6 +83,15 @@ func main() {
 	http.HandleFunc("/wiki/edit/", wikiEditHandler)
 	http.HandleFunc("/wiki/save/", wikiSaveHandler)
 	http.ListenAndServe(addr, nil)
+}
+
+func sandbox() {
+	sandbox, err := loadPage("SandBox")
+	if err != nil {
+		log.Println("Creating SandBox wiki page")
+		sandbox = Page{Title: "SandBox", Body: "This is the SandBox Page. Play around. Do not rely on this page surviving forever"}
+		sandbox.save()
+	}
 }
 
 func printStartUpMessage(addr string) {
