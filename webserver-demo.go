@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +12,36 @@ import (
 
 const addr = ":8080"
 
+// Page represents a page in a wiki
+type Page struct {
+	Title string
+	Body  string
+}
+
+func (p Page) save() error {
+	filename := p.Title + ".txt"
+	err := ioutil.WriteFile(filename, []byte(p.Body), os.ModePerm)
+	return err
+}
+
+func loadPage(title string) (Page, error) {
+	filename := title + ".txt"
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return Page{Title: title, Body: "Could not retrieve file - do not save this!!!"}, err
+	}
+	return Page{Title: title, Body: string(body)}, nil
+}
+
 func main() {
+
+	p1 := Page{Title: "TestPage", Body: "This is a sample Page."}
+	p1.save()
+
+	p2, _ := loadPage("TestPage")
+	fmt.Println(p2.Title)
+	fmt.Println(p2.Body)
+
 	printStartUpMessage(addr)
 
 	http.HandleFunc("/", top)
