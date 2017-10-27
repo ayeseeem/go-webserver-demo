@@ -38,7 +38,9 @@ func loadPage(title string) (Page, error) {
 func wikiViewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/wiki/view/"):]
 	p, _ := loadPage(title)
-	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+
+	t, _ := template.ParseFiles("./templates/wikiView.html")
+	t.Execute(w, p)
 }
 
 func wikiEditHandler(w http.ResponseWriter, r *http.Request) {
