@@ -25,7 +25,14 @@ func printStartUpMessage(addr string) {
 }
 
 func top(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello world\n")
+	homePageText := `
+<html>
+<body>
+<p>Hello world</p>
+</body>
+</html>
+`
+	fmt.Fprintf(w, homePageText)
 }
 
 func simple(w http.ResponseWriter, r *http.Request) {
