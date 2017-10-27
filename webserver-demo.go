@@ -19,7 +19,7 @@ func top(w http.ResponseWriter, r *http.Request) {
 }
 
 func simple(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "simple-template.html", UserInfo{123, "mockers"})
+	renderTemplate(w, "./templates/simple-template.html", UserInfo{123, "mockers"})
 }
 
 // UserInfo is a bodged type for use investigating how templates work
