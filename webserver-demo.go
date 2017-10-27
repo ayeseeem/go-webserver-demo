@@ -28,7 +28,8 @@ func printStartUpMessage(addr string) {
 func top(w http.ResponseWriter, r *http.Request) {
 	f, err := os.Open("./home.html")
 	if err != nil {
-		log.Fatal("Could not read template", err)
+		log.Println("Problem with template", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	defer f.Close()
 	io.Copy(w, f)
@@ -46,10 +47,12 @@ type UserInfo struct {
 	Username string
 }
 
-func renderTemplate(w io.Writer, templateFilename string, user UserInfo) {
+func renderTemplate(w http.ResponseWriter, templateFilename string, user UserInfo) {
 	t, err := template.ParseFiles(templateFilename)
 	if err != nil {
-		log.Fatal("Could not parse template", templateFilename)
+		log.Println("Problem with template", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	t.Execute(w, user)
 }
